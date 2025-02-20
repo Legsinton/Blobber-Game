@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1936565513436502698}
   - component: {fileID: 2043835107842390382}
   - component: {fileID: 5719837326947394469}
+  - component: {fileID: 7540372354428699542}
   m_Layer: 6
   m_Name: Sticky
   m_TagString: Sticky
@@ -158,6 +159,20 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &7540372354428699542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4870685285144554696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42050072ee73a1c49af47a69aadf5d43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scoreController: {fileID: 0}
+  movement: {fileID: 0}
 --- !u!1 &5947222068170246878
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,6 +187,7 @@ GameObject:
   - component: {fileID: 6453034418445437146}
   - component: {fileID: 4428425939498090829}
   - component: {fileID: 7362016783799151255}
+  - component: {fileID: 7511274363054164976}
   m_Layer: 6
   m_Name: Square
   m_TagString: Bouncy
@@ -351,6 +367,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7511274363054164976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5947222068170246878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42050072ee73a1c49af47a69aadf5d43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scoreController: {fileID: 0}
+  movement: {fileID: 0}
 --- !u!1 &9217168827842625224
 GameObject:
   m_ObjectHideFlags: 0

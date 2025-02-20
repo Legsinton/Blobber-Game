@@ -352,7 +352,7 @@ namespace Player
             }
             // # # # # # # # # # # # # # # # # # # # # # # BOUNCY PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-            if (collision.gameObject.CompareTag("Bouncy"))
+           /* if (collision.gameObject.CompareTag("Bouncy"))
             {
                 Vector2 collisionNormal = collision.contacts[0].normal;
 
@@ -490,7 +490,7 @@ namespace Player
                     Debug.Log("Sticky Spike Bottom");
                 }
 
-            }
+            }*/
             // # # # # # # # # # # # # # # # # # # # # # # SPIKY FLIPPED PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 

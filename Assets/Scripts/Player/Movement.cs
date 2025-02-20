@@ -160,8 +160,8 @@ namespace Player
                 jumpBool = true;
                 rb.gravityScale = normalGravityScale;
                 onPlatform = false;
-                 onNormalPlatform = false;
-               // collisionGame.SpriteOffset = 0;
+                onNormalPlatform = false;
+              //collisionGame.SpriteOffset = 0;
 
                 collisionGame.DetachPlayer();
                 is_Attached = false;
@@ -209,7 +209,6 @@ namespace Player
         {
             if (collision.gameObject.CompareTag("MovingPlatform"))
             {
-                //SoundFXManager.Instance.PlaySoundFX(SoundType.Smack);
                 onPlatform = true;
                 collisionGame.SpriteOffset = (rb.transform.position.x < collision.transform.position.x) ? 90 : -90; // Adjust as needed (e.g., 90 or -90 degrees)
                 platformTransform = collision.transform; // Store the platform's transform
@@ -218,7 +217,6 @@ namespace Player
             }
             if (collision.gameObject.CompareTag("MovingPlatformVertical"))
             {
-                //SoundFXManager.Instance.PlaySoundFX(SoundType.Smack);
                 onPlatform = true;
                 platformTransform = collision.transform; // Store the platform's transform
                 lastPlayerPosition = platformTransform.position; // Initialize position
