@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Death
+  - Sticky
+  - Moving
+  - Bouncy
+  - Platform
+  - Spikes
+  - Start
+  - MovingPlatform
+  - Coin
+  - EndPosition
+  - MovingPlatformVertical
+  - CoinSpawner
+  - Breaking
+  - StickySpike
+  - StickySpikeFlip
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Ground
+  - Water
+  - UI
+  - Platforms
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Platforms
+    uniqueID: 3808509091
+    locked: 0

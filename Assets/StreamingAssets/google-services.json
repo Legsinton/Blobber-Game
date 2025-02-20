@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "836684623104",
+    "firebase_url": "https://blobber-game-firebase-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "blobber-game-firebase",
+    "storage_bucket": "blobber-game-firebase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836684623104:android:a43f35284ece29dfd117e5",
+        "android_client_info": {
+          "package_name": "com.google.Firebase.Game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBybQwF3kZd0r6d0s4_0MAl9oZ-VbtSpkg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
