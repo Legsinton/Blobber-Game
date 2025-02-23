@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6158185058122240884}
   - component: {fileID: -1014205539230643207}
   - component: {fileID: 3950778625498157352}
+  - component: {fileID: -18247849969998935}
   m_Layer: 6
   m_Name: Sticky Platform
   m_TagString: Sticky
@@ -148,3 +149,15 @@ CapsuleCollider2D:
   m_Offset: {x: -0.0010735987, y: -0.020464536}
   m_Size: {x: 0.9822274, y: 0.8736912}
   m_Direction: 1
+--- !u!114 &-18247849969998935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7910725437815153190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a10cff04c05d6154fa8466ee47425952, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

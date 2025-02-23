@@ -13,7 +13,7 @@ namespace Player
         [SerializeField] private float normalGravityScale = 1.2f;
         public ScoreController scoreController;
         protected int score = 1;
-        bool breakPlat = false;
+//        bool breakPlat = false;
         private Transform platform;
         public Transform platformTransform;
         public bool onNormalPlatform;
@@ -23,7 +23,7 @@ namespace Player
         public Vector3 LastPlayerPosition => lastPlayerPosition;
         public Transform PlatformTransform => platformTransform;
         private HashSet<GameObject> scoredObjects;
-        private float spriteOffset;
+       // private float spriteOffset;
 
         SpriteRenderer spriteRenderer;
         float platformWidth;
@@ -31,13 +31,12 @@ namespace Player
         Vector2 collisionNormal;
         bool top = false;
         bool onPlat = false;
-        public float SpriteOffset { get { return spriteOffset; } set { spriteOffset = value; } }
+       // public float SpriteOffset { get { return spriteOffset; } set { spriteOffset = value; } }
         public Vector3 positionOffset;
         public bool isOnPlatform = false;
         public bool launched = false;
         public bool Launched => launched;
         public bool IsOnPlatform => isOnPlatform;
-        private bool hasbounced = false;
         Movement movement;
 
         void Start()
@@ -52,69 +51,17 @@ namespace Player
         }
         void FixedUpdate()
         {
-            if (isOnPlatform && platformTransform != null)
+            /*if (isOnPlatform && platformTransform != null)
             {
                 // Keep the player stuck to the platform's position while maintaining the offset
                 rb.position = (Vector3)platformTransform.position + (Vector3)positionOffset;
-            }
+            }*/
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            // # # # # # # # # # # # # # # # # # NORMAL PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # 
-            if (collision.gameObject.CompareTag("Platform"))
-            {
-                collisionNormal = collision.contacts[0].normal;
-
-                if (!movement.IsAttached)
-                {
-
-                    if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x)) // Prioritize vertical hits
-                    {
-                        if (collisionNormal.y > 0.4f) // Top of the platform
-                        {
-                            movement.IsAttached = true;
-                            onNormalPlatform = true;
-                            Debug.Log("Hit the top of the platform!");
-                            rb.velocity = Vector2.zero;
-                            SoundFXManager.Instance.PlaySoundFX(SoundType.Smack);
-                            Debug.DrawRay(collision.contacts[0].point, collision.contacts[0].normal, Color.red, 2f);
-
-                            if (!scoredObjects.Contains(collision.gameObject))
-                            {
-                                scoredObjects.Add(collision.gameObject);
-                                scoreController.AddScore(score);
-                            }
-
-                        }
-                        else if (collisionNormal.y < -0.4f) // Bottom of the platform
-                        {
-                            Debug.Log("Hit the bottom of the platform!");
-                            BounceSmall(collision.relativeVelocity.x, collision.relativeVelocity.y);
-                        }
-                    }
-
-                    else if (Mathf.Abs(collisionNormal.x) > Mathf.Abs(collisionNormal.y))
-                    {
-                        if (collisionNormal.x > 0.4f) // right side of the platform
-                        {
-                            Debug.Log("Hit the Right side!");
-                            Debug.DrawRay(collision.contacts[0].point, collision.contacts[0].normal, Color.red, 2f);
-                            BounceSmall(collision.relativeVelocity.x, collision.relativeVelocity.y);
-
-                        }
-                        else if (collisionNormal.x < -0.4f) // left side of the platform
-                        {
-                            Debug.Log("Hit the Left side!");
-                            BounceSmall(collision.relativeVelocity.x, collision.relativeVelocity.y);
-
-                        }
-
-                    }
-                }
-
-            }
-            // # # # # # # # # # # # # # # # # # # # # # # MOVING PLATFORM VERTICAL # # # # # # # # # # # # # # # # # # # # # # # # # # 
+         
+           /* // # # # # # # # # # # # # # # # # # # # # # # MOVING PLATFORM VERTICAL # # # # # # # # # # # # # # # # # # # # # # # # # # 
             if (collision.gameObject.CompareTag("MovingPlatformVertical") && isOnPlatform != true)
             {
                 collisionNormal = collision.contacts[0].normal;
@@ -239,175 +186,7 @@ namespace Player
                 }
 
             }
-            // # # # # # # # # # # # # # # # # # # # # # # START PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
-
-            if (collision.gameObject.CompareTag("Start"))
-            {
-                collisionNormal = collision.contacts[0].normal;
-
-                if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x)) // Prioritize vertical hits
-                {
-                    if (collisionNormal.y > 0.4f) // Top of the platform
-                    {
-                        onNormalPlatform = true;
-                        Debug.Log("Start Hit the top of the platform!");
-                        rb.velocity = Vector2.zero;
-                        Debug.DrawRay(collision.contacts[0].point, collision.contacts[0].normal, Color.red, 2f);
-                    }
-                    else if (collisionNormal.y < -0.4f) // Bottom of the platform
-                    {
-                        Debug.Log("Start Hit the bottom of the platform!");
-                    }
-                }
-            }
-
-            // # # # # # # # # # # # # # # # # # # # # # # STICKY PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
-
-            if (collision.gameObject.CompareTag("Sticky"))
-            {
-                collisionNormal = collision.contacts[0].normal;
-                if (!movement.IsAttached)
-                {
-
-                    if (Mathf.Abs(collisionNormal.x) > Mathf.Abs(collisionNormal.y))
-                    {
-                        if (collisionNormal.x > 0.2f)
-                        {
-
-                            if (top != true)
-                            {
-                                movement.IsAttached = true;
-                                launched = true;
-                                rb.velocity = Vector2.zero;
-                                rb.gravityScale = 0;
-                                StartCoroutine(FallDown());
-
-                                SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
-                                spriteOffset = 90;
-                                Debug.Log("StickyRight");
-                                onPlat = true;
-
-                                if (!scoredObjects.Contains(collision.gameObject))
-                                {
-                                    scoredObjects.Add(collision.gameObject);
-                                    scoreController.AddScore(score);
-                                }
-
-                            }
-                        }
-                        if (collisionNormal.x < -0.2f)
-                        {
-                            if (top != true)
-                            {
-                                movement.IsAttached = true;
-                                launched = true;
-                                rb.velocity = Vector2.zero;
-                                rb.gravityScale = 0;
-                                StartCoroutine(FallDown());
-                                SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
-                                Debug.Log("StickyLeft");
-                                spriteOffset = -90;
-                                onPlat = true;
-                                
-
-                                if (!scoredObjects.Contains(collision.gameObject))
-                                {
-                                    scoredObjects.Add(collision.gameObject);
-                                    scoreController.AddScore(score);
-                                }
-
-                            }
-                        }
-
-
-                    }
-                    if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x))
-                    {
-
-                        if (collisionNormal.y > 0.2f)
-                        {
-                            if (top != true)
-                            {
-                                movement.IsAttached = true;
-                                playerWidth = rb.GetComponent<Collider2D>().bounds.size.x;
-                                platform = collision.transform;
-                                rb.velocity = Vector2.zero;
-                                platformWidth = platform.GetComponent<Collider2D>().bounds.size.x;
-                                StartCoroutine(SnapAndFallCoroutine(PlatformType.Sticky));
-                                
-                                Debug.Log("StickyTop");
-
-                            }
-                        }
-
-                    }
-
-                    if (collisionNormal.y < -0.2f)
-                    {
-                        BounceSmall(collision.relativeVelocity.x, collision.relativeVelocity.y);
-                        Debug.Log("StickyBottom");
-                    }
-
-                }
-            }
-            // # # # # # # # # # # # # # # # # # # # # # # BOUNCY PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
-
-           /* if (collision.gameObject.CompareTag("Bouncy"))
-            {
-                Vector2 collisionNormal = collision.contacts[0].normal;
-
-                if (Mathf.Abs(collisionNormal.x) > Mathf.Abs(collisionNormal.y))
-                {
-                    if (!hasbounced)
-                    {
-                        if (collisionNormal.x > 0.2f) // RightSide of the platform
-                        {
-                            hasbounced = true;
-                            Bounce(collision.relativeVelocity.x, collision.relativeVelocity.y);
-                            Invoke(nameof(ResetBounce), 0.1f);
-                            Debug.Log("RightBounce");
-
-                            if (!scoredObjects.Contains(collision.gameObject))
-                            {
-                                scoredObjects.Add(collision.gameObject);
-                                scoreController.AddScore(score);
-                            }
-                        }
-                        else if (collisionNormal.x < -0.2f) // Leftside of the platform
-                        {
-                            hasbounced = true;
-                            Bounce(collision.relativeVelocity.x, collision.relativeVelocity.y);
-                            Invoke(nameof(ResetBounce), 0.1f);
-                            if (!scoredObjects.Contains(collision.gameObject))
-                            {
-                                scoredObjects.Add(collision.gameObject);
-                                scoreController.AddScore(score);
-                            }
-                            Debug.Log("LeftBounce");
-                        }
-
-                    }
-                }
-                else if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x))
-                {
-                    if (collisionNormal.y > 0.2f) // Top of the platform
-                    {
-                        hasbounced = true;
-                        BounceSmall(collision.relativeVelocity.x, collision.relativeVelocity.y);
-                        Invoke(nameof(ResetBounce), 0.1f);
-
-                        Debug.Log("TopBounce");
-                    }
-                    else if (collisionNormal.y < -0.2f) // Bottom of the platform
-                    {
-                        hasbounced = true;
-                        BounceSmall(collision.relativeVelocity.x, collision.relativeVelocity.y);
-                        Invoke(nameof(ResetBounce), 0.1f);
-
-                        Debug.Log("Bottombounce");
-                    }
-                }
-            }
+        
             // # # # # # # # # # # # # # # # # # # # # # # SPIKY PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 
@@ -426,7 +205,7 @@ namespace Player
                             rb.gravityScale = 0;
                             StartCoroutine(FallDown());
                             SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
-                            spriteOffset = 90;
+                            //spriteOffset = 90;
                             Debug.Log("Sticky Spike Right");
                             onPlat = true;
                             
@@ -449,7 +228,7 @@ namespace Player
                             StartCoroutine(FallDown());
                             SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
                             Debug.Log("Sticky Spike Left");
-                            spriteOffset = -90;
+                            //spriteOffset = -90;
                             onPlat = true;
                             if (!scoredObjects.Contains(collision.gameObject))
                             {
@@ -490,7 +269,7 @@ namespace Player
                     Debug.Log("Sticky Spike Bottom");
                 }
 
-            }*/
+            }
             // # # # # # # # # # # # # # # # # # # # # # # SPIKY FLIPPED PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 
@@ -511,7 +290,7 @@ namespace Player
                             StartCoroutine(FallDown());
 
                             SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
-                            spriteOffset = 90;
+                          // spriteOffset = 90;
                             Debug.Log("StickySpike Flip Right");
                             onPlat = true;
                             
@@ -534,7 +313,7 @@ namespace Player
                             StartCoroutine(FallDown());
                             SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
                             Debug.Log("StickySpike Flip Left");
-                            spriteOffset = -90;
+                           // spriteOffset = -90;
                             onPlat = true;
 
                             if (!scoredObjects.Contains(collision.gameObject))
@@ -577,161 +356,7 @@ namespace Player
                     }
                 }
             }
-            // # # # # # # # # # # # # # # # # # # # # # # BREAKING PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
-
-
-            if (collision.gameObject.CompareTag("Breaking"))
-            {
-                collisionNormal = collision.contacts[0].normal;
-                if (!movement.IsAttached)
-                {
-
-                    if (Mathf.Abs(collisionNormal.x) > Mathf.Abs(collisionNormal.y))
-                    {
-
-                        if (collisionNormal.x > 0.4f)
-                        {
-                            if (top != true)
-                            {
-                                movement.IsAttached = true;
-                                launched = true;
-                                rb.velocity = Vector2.zero;
-                                rb.gravityScale = 0;
-                                breakPlat = true;
-                                StartCoroutine(FallDown());
-                                SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
-                                Debug.Log("BreakingRight");
-                                spriteRenderer = collision.gameObject.GetComponent<SpriteRenderer>();
-                                spriteOffset = (rb.transform.position.x < collision.transform.position.x) ? 90 : -90; // Adjust as needed (e.g., 90 or -90 degrees)
-                                onPlat = true;
-                                if (!scoredObjects.Contains(collision.gameObject))
-                                {
-                                    scoredObjects.Add(collision.gameObject);
-                                    scoreController.AddScore(score);
-                                }
-                            }
-                        }
-                        if (collisionNormal.x < -0.4f)
-                        {
-                            if (top != true)
-                            {
-                                movement.IsAttached = true;
-                                launched = true;
-                                rb.velocity = Vector2.zero;
-                                rb.gravityScale = 0;
-                                breakPlat = true;
-                                StartCoroutine(FallDown());
-
-                                spriteRenderer = collision.gameObject.GetComponent<SpriteRenderer>();
-                                SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
-                                Debug.Log("BreakingLeft");
-                                spriteOffset = (rb.transform.position.x < collision.transform.position.x) ? 90 : -90; // Adjust as needed (e.g., 90 or -90 degrees)
-                                onPlat = true;
-
-                                if (!scoredObjects.Contains(collision.gameObject))
-                                {
-                                    scoredObjects.Add(collision.gameObject);
-                                    scoreController.AddScore(score);
-                                }
-
-                            }
-                        }
-
-
-                    }
-                    if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x))
-                    {
-
-                        if (collisionNormal.y > 0.4f)
-                        {
-
-                            movement.IsAttached = true;
-                            playerWidth = rb.GetComponent<Collider2D>().bounds.size.x;
-                            platform = collision.transform;
-                            rb.velocity = Vector2.zero;
-                            platformWidth = platform.GetComponent<Collider2D>().bounds.size.x;
-                            breakPlat = true;
-                            spriteRenderer = collision.gameObject.GetComponent<SpriteRenderer>();
-                            StartCoroutine(SnapAndFallCoroutine(PlatformType.Sticky));
-                            Debug.Log("BreakingTop");
-                        }
-                    }
-
-                    if (collisionNormal.y < -0.4f)
-                    {
-                        BounceSmall(collision.relativeVelocity.x, collision.relativeVelocity.y);
-                        Debug.Log("BreakingBottom");
-                    }
-
-                }
-            }
-        }
-        private void OnCollisionExit2D(Collision2D collision)
-        {
-            // # # # # # # # # # # # # # # # # # # # # # # STICKY PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
-            if (collision.gameObject.CompareTag("Sticky"))
-            {
-                if (collision.contactCount >= 0)
-                {
-                    if (Mathf.Abs(collisionNormal.x) > Mathf.Abs(collisionNormal.y))
-                    {
-
-                        if (collisionNormal.x > 0.4f)
-                        {
-
-                            Debug.Log("StickyLeavingRight");
-                            //isStuckToStickyPlatform = false;
-                            if (top != true)
-                            {
-                                launched = false;
-                                //rb.gravityScale = normalGravityScale;
-                                top = false;
-                                onPlat = false;
-
-                            }
-
-                        }
-                        if (collisionNormal.x < -0.4f)
-                        {
-                            if (top != true)
-                            {
-
-
-                                Debug.Log("StickyExitLeft");
-                                //isStuckToStickyPlatform = false;
-                                launched = false;
-                               // rb.gravityScale = normalGravityScale;
-                                top = false;
-                                onPlat = false;
-
-                            }
-
-                        }
-
-
-                    }
-                    if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x))
-                    {
-                        if (collisionNormal.y > 0.4f)
-                        {
-                            onPlat = false;
-
-                            Debug.Log("Sticky");
-                            platform = null;
-                            launched = false;
-                            top = true;
-                            onPlat = false;
-
-                            //rb.gravityScale = stickyGravityScale;
-                            if (!scoredObjects.Contains(collision.gameObject))
-                            {
-                                scoredObjects.Add(collision.gameObject);
-                                scoreController.AddScore(score);
-                            }
-                        }
-                    }
-                }
-            }
+           
             // # # # # # # # # # # # # # # # # # # # # # # SPIKY PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
             if (collision.gameObject.CompareTag("StickySpike") || collision.gameObject.CompareTag("StickySpikeFlip"))
             {
@@ -789,88 +414,9 @@ namespace Player
 
                 }
             }
-            // # # # # # # # # # # # # # # # # # # # # # # BREAKING PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
-
-            if (collision.gameObject.CompareTag("Breaking"))
-            {
-                if (collision.contactCount >= 0)
-                {
-                    if (Mathf.Abs(collisionNormal.x) > Mathf.Abs(collisionNormal.y))
-                    {
-
-                        if (collisionNormal.x > 0.4f)
-                        {
-                            Debug.Log("BrekingExitRight");
-                            launched = false;
-                          //  rb.gravityScale = normalGravityScale;
-                            top = false;
-                            onPlat = false;
-                            if (breakPlat)
-                            {
-                                StartCoroutine(FadeOut(0.7f));
-                                Destroy(collision.gameObject, 0.8f);
-                            }
-                        }
-                        if (collisionNormal.x < -0.4f)
-                        {
-                            Debug.Log("BrekingExitleft");
-                            launched = false;
-                           // rb.gravityScale = normalGravityScale;
-                            top = false;
-                            onPlat = false;
-
-                            if (breakPlat)
-                            {
-                                StartCoroutine(FadeOut(0.7f));
-                                Destroy(collision.gameObject, 0.8f);
-                            }
-                        }
-                    }
-                    if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x))
-                    {
-                        if (collisionNormal.y > 0.4f)
-                        {
-                            onPlat = false;
-
-                            Debug.Log("BreakingExit");
-                            platform = null;
-                            launched = false;
-                            top = true;
-
-                            if (!scoredObjects.Contains(collision.gameObject))
-                            {
-                                scoredObjects.Add(collision.gameObject);
-                                scoreController.AddScore(score);
-                            }
-                            if (breakPlat)
-                            {
-                                StartCoroutine(FadeOut(3));
-                                Destroy(collision.gameObject, 3.2F);
-                            }
-                        }
-                    }
-                }
-            }
-            // # # # # # # # # # # # # # # # # # # # # # # NORMAIL PLATFORM # # # # # # # # # # # # # # # # # # # # # # # # # # 
-
-            if (collision.gameObject.CompareTag("Platform"))
-            {
-                onNormalPlatform = false;
-                isOnPlatform = false;
-
-                DetachPlayer();
-            }
-
-            if (collision.gameObject.CompareTag("Start"))
-            {
-
-                onNormalPlatform = false;
-                isOnPlatform = false;
-
-                DetachPlayer();
-            }
-            Debug.Log("Exited collision with: " + collision.gameObject.name);
-            /*if (collision.gameObject.CompareTag("MovingPlatform"))
+         
+          
+           /* if (collision.gameObject.CompareTag("MovingPlatform"))
             {
                 Debug.Log("Detached");
                 movement.IsAttached = false;
@@ -915,29 +461,8 @@ namespace Player
             }
 
         }
-        private IEnumerator FadeOut(float duration)
-        {
-            if (spriteRenderer != null)
-            {
-                Color color = spriteRenderer.color;
-                float startAlpha = color.a;
-                float elapsedTime = 0f;
 
-                while (elapsedTime < duration)
-                {
-                    elapsedTime += Time.deltaTime;
-                    color.a = Mathf.Lerp(startAlpha, 0f, elapsedTime / duration);
-                    spriteRenderer.color = color;
-                    yield return null;
-                }
-                // Ensure it's fully opaque at the end
-                color.a = 0f;
-                spriteRenderer.color = color;
-            }
-        }
-
-
-        private void AttachPlayer()
+        /*private void AttachPlayer()
         {
 
             Debug.Log("Attached");
@@ -946,25 +471,21 @@ namespace Player
             rb.gravityScale = 0f; // Disable gravity while on the platform
             rb.velocity = Vector2.zero; // Stop velocity to prevent sliding
             isOnPlatform = true;
-        }
+        }*/
 
-        public void DetachPlayer()
+      /*  public void DetachPlayer()
         {
             if (IsOnPlatform)
             {
-                Debug.LogWarning("Detach Exit");
                 isOnPlatform = false;
                 platformTransform = null;
                // rb.gravityScale = normalGravityScale; // Restore gravity
                 positionOffset = Vector3.zero; // Reset offset
+                Debug.LogWarning("Detach Exit");
 
             }
-        }
+        }*/
 
-        private void ResetBounce()
-        {
-            hasbounced = false;
-        }
         private IEnumerator SnapAndFallCoroutine(PlatformType platformType)
         {
             yield return new WaitForSeconds(0.1f); // Brief delay for stability
@@ -979,14 +500,14 @@ namespace Player
                         {
                             // Snap to the left side
                             targetX = platform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
-                            spriteOffset = 90; // Rotate for left side
+                           // spriteOffset = 90; // Rotate for left side
                             Debug.Log("Falling SnaperLeft");
                         }
                         else
                         {
                             // Snap to the right side
                             targetX = platform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                            spriteOffset = -90; // Rotate for right side
+                            //spriteOffset = -90; // Rotate for right side
                             Debug.Log("Falling SnaperRight");
                         }
 
@@ -994,7 +515,7 @@ namespace Player
                         rb.MovePosition(new Vector2(targetX, rb.position.y));
 
                         // Rotate the player to align with the side
-                        rb.transform.rotation = Quaternion.Euler(0, 0, spriteOffset);
+                        //rb.transform.rotation = Quaternion.Euler(0, 0, spriteOffset);
 
                         yield return new WaitForSeconds(0.2f); // Short cling effect before falling
 
@@ -1029,23 +550,22 @@ namespace Player
                         {
                             // Snap to the left side
                             targetX = platformTransform.transform.position.x - (platformWidth / 2) + (playerWidth / 2) - 0.1f;
-                            spriteOffset = -90; // Rotate for left side
+                           // spriteOffset = -90; // Rotate for left side
                             Debug.Log("Falling MovingLeft");
                         }
                         else
                         {
                             // Snap to the right side
                             targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                            spriteOffset = 90; // Rotate for right side
+                           // spriteOffset = 90; // Rotate for right side
                             Debug.Log("Falling MovingRight");
                         }
 
                         rb.MovePosition(new Vector2(targetX, rb.position.y));
 
                         // Rotate the player to align with the side
-                        rb.transform.rotation = Quaternion.Euler(0, 0, spriteOffset);
+                       // rb.transform.rotation = Quaternion.Euler(0, 0, spriteOffset);
                         yield return new WaitForSeconds(0.2f); // Short cling effect before falling
-                        AttachPlayer();
                     }
                     break;
 
@@ -1057,14 +577,14 @@ namespace Player
                         {
                             // Snap to the left side
                             targetX = platform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                            spriteOffset = -90; // Rotate for left side
+                       //     spriteOffset = -90; // Rotate for left side
                             Debug.Log("Falling SpikyLeft");
                         }
                         else
                         {
                             // Snap to the right side
                             targetX = platform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                            spriteOffset = -90; // Rotate for right side
+                          //  spriteOffset = -90; // Rotate for right side
                             Debug.Log("Falling SpikyRight");
                         }
 
@@ -1104,14 +624,14 @@ namespace Player
                         {
                             // Snap to the left side
                             targetX = platform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
-                            spriteOffset = 90; // Rotate for left side
+                         //   spriteOffset = 90; // Rotate for left side
                             Debug.Log("Falling SpikyLeft");
                         }
                         else
                         {
                             // Snap to the right side
                             targetX = platform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
-                            spriteOffset = 90; // Rotate for right side
+                          //  spriteOffset = 90; // Rotate for right side
                             Debug.Log("Falling SpikyRight");
                         }
 

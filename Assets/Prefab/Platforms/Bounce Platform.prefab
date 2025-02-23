@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1936565513436502698}
   - component: {fileID: 2043835107842390382}
   - component: {fileID: 5719837326947394469}
-  - component: {fileID: 7540372354428699542}
+  - component: {fileID: 931312351986080268}
   m_Layer: 6
   m_Name: Sticky
   m_TagString: Sticky
@@ -159,7 +159,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &7540372354428699542
+--- !u!114 &931312351986080268
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -168,11 +168,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 4870685285144554696}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42050072ee73a1c49af47a69aadf5d43, type: 3}
+  m_Script: {fileID: 11500000, guid: a10cff04c05d6154fa8466ee47425952, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scoreController: {fileID: 0}
-  movement: {fileID: 0}
+  onStickyPlatform: 0
 --- !u!1 &5947222068170246878
 GameObject:
   m_ObjectHideFlags: 0

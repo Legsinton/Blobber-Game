@@ -18,7 +18,7 @@ namespace Player
         private GameUI gameUI;
         float angle;
         int reference;
-        [SerializeField] Transform platformTransform;
+        [SerializeField] Transform MovementplatformTransform;
 
 
         //Public Variables
@@ -32,9 +32,12 @@ namespace Player
         public LineRenderer lineRenderer;
         public GameObject player;
         public Collision collisionGame;
+        public BasePlatform basePlatform;
 
         //SerializeField variables
         [SerializeField] float normalGravityScale = 1f;
+        [SerializeField] float addingGravityScale = 0.2f;
+
         [SerializeField] float tempGravityScale = 2f;
         [SerializeField] float horizontalJumpForce = 15;
         [SerializeField] float verticalJumpForce = -10;
@@ -62,23 +65,17 @@ namespace Player
             gameUI = FindObjectOfType<GameUI>();
             gameObject.SetActive(true);
             collisionGame = FindAnyObjectByType<Collision>();
+            basePlatform = FindAnyObjectByType<BasePlatform>();
         }
 
         void Update()
         {
             if (isLaunched)
             {
-                // Calculate the angle based on the launch direction
                 angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
-
-                // Apply the rotation to the sprite only
-                spriteTransform.rotation = Quaternion.AngleAxis(angle + collisionGame.SpriteOffset, Vector3.forward);
-
-                if (collisionGame.onNormalPlatform == true)
-                {
-                    spriteTransform.rotation = Quaternion.identity; // Reset rotation to default
-                }
+                spriteTransform.rotation = Quaternion.AngleAxis(angle + basePlatform.SpriteOffset, Vector3.forward);
             }
+
 
             if (rb.transform.rotation.z != 0)
             {
@@ -92,20 +89,24 @@ namespace Player
 
         void FixedUpdate()
         {
-            if (isLaunched)
+            if (isLaunched && !basePlatform.onStickyPlatform)
             {
                 // Adjust Sprite Offset, 90 or -90 degrees
-                collisionGame.SpriteOffset = -90;
+                basePlatform.SpriteOffset = -90;
             }
-            if (platformTransform != null)
+            if (MovementplatformTransform != null)
             {
-                lastPlayerPosition = platformTransform.position; // Update position every frame
+                lastPlayerPosition = MovementplatformTransform.position; // Update position every frame
             }
-            if ((onPlatform || onNormalPlatform) && platformTransform != null && isDragging) // Only update if standing on a platform
+            if ((onPlatform || onNormalPlatform) && MovementplatformTransform != null && isDragging) // Only update if standing on a platform
             {
                 //Vector3 platformMovement = platformTransform.position - lastPlayerPosition;
 
-                lastPlayerPosition = platformTransform.position; // Update last position
+                lastPlayerPosition = MovementplatformTransform.position; // Update last position
+            }
+            if (rb.velocity.y < 0)
+            {
+                rb.gravityScale += addingGravityScale * Time.deltaTime;
             }
         }
         private void Controls()
@@ -113,9 +114,11 @@ namespace Player
             // Start dragging
             if (Input.GetMouseButtonDown(0) && !isLaunched && !jumpBool)
             {
+                // Initial touch position, multiplied to adjust the scale
                 initialTouchPos = Camera.main.ScreenToViewportPoint(Input.mousePosition) * 20;
                 initialTouchPos.z = 0f;
 
+                // Enable LineRenderer to show the drag path
                 lineRenderer.enabled = true;
                 isDragging = true;
             }
@@ -123,32 +126,30 @@ namespace Player
             // Dragging logic
             if (Input.GetMouseButton(0) && !isLaunched && !jumpBool)
             {
-                isDragging = true;
-                //collision.SpriteOffset = 0f;
-                // Set the start of the LineRenderer to the player's current position
-                lineRenderer.SetPosition(0, rb.position);
 
-                // Calculate the drag vector relative to the initial touch position
+                // Update the LineRenderer position to show the drag's start point at the player's current position
+               lineRenderer.SetPosition(0, player.transform.position);
+                // Calculate the drag vector based on the initial touch and current mouse position
                 dragVector = initialTouchPos - Camera.main.ScreenToViewportPoint(Input.mousePosition) * 20;
                 dragVector.z = 0f; // Keep it in 2D
 
-                // Calculate the launch direction and clamp the drag distance
-                launchDirection = dragVector.normalized; // No need to reverse here
+                // Normalize the drag vector to get a direction
+                launchDirection = dragVector.normalized;
+
                 float dragDistance = Mathf.Clamp(dragVector.magnitude, 0, maxLaunchForce);
-
-                // Update the projected end position of the drag
                 endPosition = rb.position + launchDirection * dragDistance;
-                lineRenderer.SetPosition(1, endPosition);
 
-                // Flip the square's direction based on launch direction
-                player.transform.localScale = new Vector3(launchDirection.x < 0 ? -1 : 1, 1, 1);
+                lineRenderer.SetPosition(1, endPosition); // Visual representation of drag
+
             }
 
             // Launch on release
             if (Input.GetMouseButtonUp(0) && !isLaunched && !jumpBool && isDragging)
             {
+                basePlatform.DetachPlayer();
                 // Use the same drag vector calculated during dragging
                 float dragDistance = Mathf.Clamp(dragVector.magnitude, 0, maxLaunchForce);
+                
 
                 // Apply the force for the launch
                 rb.AddForce(launchDirection * (dragDistance * speed), ForceMode2D.Impulse);
@@ -161,11 +162,8 @@ namespace Player
                 rb.gravityScale = normalGravityScale;
                 onPlatform = false;
                 onNormalPlatform = false;
-              //collisionGame.SpriteOffset = 0;
+               
 
-                collisionGame.DetachPlayer();
-                is_Attached = false;
-                IsAttached = false;
                 Invoke(nameof(StopDragging), 0.05f);
                 animator.SetTrigger("JumpUp");
                 SoundFXManager.Instance.PlaySoundFX(SoundType.Launch);
@@ -178,6 +176,7 @@ namespace Player
                 isLaunched = false;
                 jumpBool = false;
                 jump = 0;
+                //normalGravityScale = 1.2f;
             }
         }
 
@@ -210,16 +209,16 @@ namespace Player
             if (collision.gameObject.CompareTag("MovingPlatform"))
             {
                 onPlatform = true;
-                collisionGame.SpriteOffset = (rb.transform.position.x < collision.transform.position.x) ? 90 : -90; // Adjust as needed (e.g., 90 or -90 degrees)
-                platformTransform = collision.transform; // Store the platform's transform
-                lastPlayerPosition = platformTransform.position; // Initialize position
+               // collisionGame.SpriteOffset = (rb.transform.position.x < collision.transform.position.x) ? 90 : -90; // Adjust as needed (e.g., 90 or -90 degrees)
+                MovementplatformTransform = collision.transform; // Store the platform's transform
+                lastPlayerPosition = MovementplatformTransform.position; // Initialize position
                 initialMousePos = transform.position;
             }
             if (collision.gameObject.CompareTag("MovingPlatformVertical"))
             {
                 onPlatform = true;
-                platformTransform = collision.transform; // Store the platform's transform
-                lastPlayerPosition = platformTransform.position; // Initialize position
+                MovementplatformTransform = collision.transform; // Store the platform's transform
+                lastPlayerPosition = MovementplatformTransform.position; // Initialize position
             }
         }
 
