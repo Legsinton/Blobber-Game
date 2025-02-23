@@ -372,29 +372,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb0d643e017e62644875b85d66b0190b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  platformTransform: {fileID: 0}
+  MovementplatformTransform: {fileID: 0}
   maxLaunchForce: 7.5
-  speed: 2
+  speed: 2.2
   lineLengthMultiplier: 0.5
-  jump: 0
-  jumpBool: 0
   rb: {fileID: 7065597703808699495}
   lineRenderer: {fileID: 3156496214496451679}
   player: {fileID: 6648334501014077396}
   collisionGame: {fileID: 0}
+  basePlatform: {fileID: 0}
   normalGravityScale: 1.2
+  addingGravityScale: 0.2
   tempGravityScale: 4
   horizontalJumpForce: -10
   verticalJumpForce: 15
-  isActive: 1
   spriteTransform: {fileID: 2339351581824119915}
   animator: {fileID: 7026740608207664045}
-  is_Attached: 0
-  onNormalPlatform: 0
-  hasPlayed: 0
-  isDragging: 0
-  onPlatform: 0
-  isLaunched: 0
 --- !u!114 &693486912723412765
 MonoBehaviour:
   m_ObjectHideFlags: 0

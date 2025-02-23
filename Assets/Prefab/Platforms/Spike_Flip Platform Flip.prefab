@@ -495,6 +495,7 @@ GameObject:
   - component: {fileID: 1473070939647938687}
   - component: {fileID: 7606816766670527977}
   - component: {fileID: 8015946762634465772}
+  - component: {fileID: 7941194765164495674}
   m_Layer: 6
   m_Name: Sticky Spike
   m_TagString: StickySpikeFlip
@@ -631,6 +632,18 @@ CapsuleCollider2D:
   m_Offset: {x: 0.0033972738, y: -0.045116574}
   m_Size: {x: 0.98976016, y: 0.91354644}
   m_Direction: 1
+--- !u!114 &7941194765164495674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302374702012360187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 388cd8be378b42d48861f8a3a8f7267b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1337778943705446341
 GameObject:
   m_ObjectHideFlags: 0

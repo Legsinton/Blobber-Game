@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 5345200174925690497}
   - component: {fileID: 7978545515342293267}
   - component: {fileID: 7454295731408318760}
-  - component: {fileID: 6264220349630732314}
   m_Layer: 6
   m_Name: DiagonalMovePlatform
   m_TagString: MovingPlatform
@@ -149,19 +148,6 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0.004022996}
   m_Size: {x: 1, y: 0.991954}
   m_Direction: 0
---- !u!114 &6264220349630732314
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 164495789344488740}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0fa8951de0f0d924799e012cc70fa651, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  onStickyPlatform: 0
 --- !u!1 &339861631282807854
 GameObject:
   m_ObjectHideFlags: 0

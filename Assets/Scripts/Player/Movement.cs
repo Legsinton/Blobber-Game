@@ -9,7 +9,7 @@ namespace Player
     public class Movement : MonoBehaviour
     {
         //Private Variables
-        private Vector3 initialMousePos;
+       // private Vector3 initialMousePos;
         private Vector3 dragVector;
         private Vector3 initialTouchPos;
         private Vector3 lastPlayerPosition;
@@ -19,14 +19,16 @@ namespace Player
         float angle;
         int reference;
         [SerializeField] Transform MovementplatformTransform;
+        private float lastLoggedOffset = -9999f; // Unlikely starting value
+
 
 
         //Public Variables
         public float maxLaunchForce = 10f;
         public float speed = 2f;
         public float lineLengthMultiplier = 0.5f;
-        [SerializeField] protected int jump = 0;
-        [SerializeField] bool jumpBool = false;
+        private int jump = 0;
+        bool jumpBool = false;
         //Public Objects
         public Rigidbody2D rb;
         public LineRenderer lineRenderer;
@@ -42,16 +44,17 @@ namespace Player
         [SerializeField] float horizontalJumpForce = 15;
         [SerializeField] float verticalJumpForce = -10;
         [SerializeField] Transform spriteTransform;
+        public Transform SpriteTransform { get { return spriteTransform; } set { spriteTransform = value; } }
 
         [SerializeField] Animator animator;
-        [SerializeField] private bool is_Attached;
+        private bool is_Attached;
         public bool IsAttached { get { return is_Attached; } set { is_Attached = value; } }
 
         //Private Bools
-        [SerializeField] bool onNormalPlatform = false;
-        [SerializeField] bool hasPlayed = false;
-        [SerializeField] bool isDragging = false;
-        [SerializeField] bool onPlatform = false;
+        bool onNormalPlatform = false;
+        bool hasPlayed = false;
+        bool isDragging = false;
+        bool onPlatform = false;
         [SerializeField] bool isLaunched = false;
 
         void Start()
@@ -70,11 +73,8 @@ namespace Player
 
         void Update()
         {
-            if (isLaunched)
-            {
-                angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
-                spriteTransform.rotation = Quaternion.AngleAxis(angle + basePlatform.SpriteOffset, Vector3.forward);
-            }
+          
+            Debug.Log($"Reading spriteOffset: {basePlatform.SpriteOffset}");
 
 
             if (rb.transform.rotation.z != 0)
@@ -82,6 +82,13 @@ namespace Player
                 rb.transform.rotation = Quaternion.Euler(0, 0, 0);
             }
 
+            if (Mathf.Abs(basePlatform.SpriteOffset - lastLoggedOffset) > 0.1f) // Log only if changed
+            {
+                lastLoggedOffset = basePlatform.SpriteOffset;
+                Debug.Log($"Movement - spriteOffset Updated: {lastLoggedOffset}");
+            }
+
+            spriteTransform.rotation = Quaternion.AngleAxis(basePlatform.SpriteOffset, Vector3.forward);
 
             Controls();
             Jump();
@@ -89,11 +96,13 @@ namespace Player
 
         void FixedUpdate()
         {
-            if (isLaunched && !basePlatform.onStickyPlatform)
+
+            if (isLaunched)
             {
-                // Adjust Sprite Offset, 90 or -90 degrees
-                basePlatform.SpriteOffset = -90;
+                angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
+                spriteTransform.rotation = Quaternion.AngleAxis(angle + -basePlatform.SpriteOffset, Vector3.forward);
             }
+
             if (MovementplatformTransform != null)
             {
                 lastPlayerPosition = MovementplatformTransform.position; // Update position every frame
@@ -104,7 +113,7 @@ namespace Player
 
                 lastPlayerPosition = MovementplatformTransform.position; // Update last position
             }
-            if (rb.velocity.y < 0)
+            if (rb.velocity.y < 0 && rb.velocity.y != -0.9f)
             {
                 rb.gravityScale += addingGravityScale * Time.deltaTime;
             }
@@ -146,11 +155,11 @@ namespace Player
             // Launch on release
             if (Input.GetMouseButtonUp(0) && !isLaunched && !jumpBool && isDragging)
             {
-                basePlatform.DetachPlayer();
+               // basePlatform.DetachPlayer();
                 // Use the same drag vector calculated during dragging
                 float dragDistance = Mathf.Clamp(dragVector.magnitude, 0, maxLaunchForce);
-                
 
+                collisionGame.DetachPlayer();
                 // Apply the force for the launch
                 rb.AddForce(launchDirection * (dragDistance * speed), ForceMode2D.Impulse);
                 isLaunched = true;
@@ -162,7 +171,8 @@ namespace Player
                 rb.gravityScale = normalGravityScale;
                 onPlatform = false;
                 onNormalPlatform = false;
-               
+
+                is_Attached = false;
 
                 Invoke(nameof(StopDragging), 0.05f);
                 animator.SetTrigger("JumpUp");
@@ -176,7 +186,6 @@ namespace Player
                 isLaunched = false;
                 jumpBool = false;
                 jump = 0;
-                //normalGravityScale = 1.2f;
             }
         }
 
@@ -212,7 +221,7 @@ namespace Player
                // collisionGame.SpriteOffset = (rb.transform.position.x < collision.transform.position.x) ? 90 : -90; // Adjust as needed (e.g., 90 or -90 degrees)
                 MovementplatformTransform = collision.transform; // Store the platform's transform
                 lastPlayerPosition = MovementplatformTransform.position; // Initialize position
-                initialMousePos = transform.position;
+               // initialMousePos = transform.position;
             }
             if (collision.gameObject.CompareTag("MovingPlatformVertical"))
             {

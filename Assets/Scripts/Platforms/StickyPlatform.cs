@@ -51,7 +51,12 @@ public class StickyPlatform : BasePlatform
                 {
                     Debug.Log("Sticky Top");
 
-                    BounceSmall(-collision.relativeVelocity.x, -collision.relativeVelocity.y);
+                    onPlat = true;
+                    playerWidth = playerRB.GetComponent<Collider2D>().bounds.size.x;
+                    platformTransform = transform;
+                    platformWidth = platformTransform.GetComponent<Collider2D>().bounds.size.x;
+                    playerRB.velocity = Vector2.zero;
+                    StartCoroutine(SnapAndFallCoroutine(PlatformType.Sticky));
 
                 }
             }
@@ -62,9 +67,11 @@ public class StickyPlatform : BasePlatform
     {
         if (playerRB != null)
         {
+            Debug.Log("Sticky leave");
             onStickyPlatform = false;
             playerRB.gravityScale = 1.2f;
-            spriteOffset = 0;
+            //spriteOffset = 0;
+            onPlat = false;
         }
     }
 }
