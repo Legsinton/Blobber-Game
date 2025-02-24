@@ -67,6 +67,6 @@ public class NormalPlatforms : BasePlatform
     protected override void HandleCollisionExit(Collision2D collision)
     {
         base.HandleCollisionExit(collision);
-        playerRB.gravityScale = 1.2f;
+        //playerRB.gravityScale = 1.2f;
     }
 }

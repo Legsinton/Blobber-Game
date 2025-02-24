@@ -14,24 +14,24 @@ public class BasePlatform : MonoBehaviour
     protected Vector2 collisionNormal;
     protected Vector2 positionOffset;
     protected bool isOnPlatform = false;
-    [SerializeField] protected Transform platformTransform;
     protected float normalGravityScale = 1.2f;
     protected bool onPlat = false;
     protected float platformWidth;
     protected float playerWidth;
-    public Movement movement;
-
     protected bool onStickyPlatform;
-    public bool OnStickyPlatform { get { return onStickyPlatform; } set { onStickyPlatform = value; } }
-    public float SpriteOffset { get { return spriteOffset; } set { spriteOffset = value; } }
-    protected Rigidbody2D rb;
-    protected HashSet<GameObject> scoredObjects;
-    readonly int score = 1;
-    ScoreController scoreController;
     protected Rigidbody2D playerRB;
     protected Vector2 falling = new Vector2(0, -0.9f);
     protected SpriteRenderer spriteRenderer;
+    protected Rigidbody2D rb;
+    protected HashSet<GameObject> scoredObjects;
+    [SerializeField] protected Transform platformTransform;
 
+    public bool OnStickyPlatform { get { return onStickyPlatform; } set { onStickyPlatform = value; } }
+    public float SpriteOffset { get { return spriteOffset; } set { spriteOffset = value; } }
+    public Movement movement;
+
+    readonly int score = 1;
+    ScoreController scoreController;
 
     public virtual void Start()
     {
@@ -39,6 +39,7 @@ public class BasePlatform : MonoBehaviour
         scoreController = FindAnyObjectByType<ScoreController>();
         scoredObjects = new HashSet<GameObject>();
         movement = FindAnyObjectByType<Movement>();
+
     }
 
     protected void FixedUpdate()
@@ -47,7 +48,6 @@ public class BasePlatform : MonoBehaviour
         {
             playerRB.transform.position = (Vector3)platformTransform.position + (Vector3)positionOffset;
         }*/
-        movement.SpriteTransform.rotation = Quaternion.AngleAxis(SpriteOffset, Vector3.forward);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -56,6 +56,10 @@ public class BasePlatform : MonoBehaviour
         playerRB = collision.gameObject.GetComponent<Rigidbody2D>();
         if (collision.transform.CompareTag("Player"))
         {
+            if (collision.gameObject.TryGetComponent(out Movement comp))
+            {
+                comp.basePlatform = this;
+            }
             HandleCollision(collision);
 
             if (!scoredObjects.Contains(collision.gameObject) && !gameObject.CompareTag("Start"))
@@ -71,13 +75,17 @@ public class BasePlatform : MonoBehaviour
     {
         playerRB = collision.gameObject.GetComponent<Rigidbody2D>();
 
+        if (collision.gameObject.TryGetComponent(out Movement comp))
+        {
+            comp.basePlatform = null;
+        }
+
         HandleCollisionExit(collision);
 
     }
 
     protected virtual void HandleCollision(Collision2D collision)
     {
-        Debug.Log($"Setting spriteOffset: {spriteOffset}");
     }
 
     protected virtual void HandleCollisionExit(Collision2D collision)
@@ -134,14 +142,14 @@ public class BasePlatform : MonoBehaviour
     {
         if (!isOnPlatform)
         {
-        platformTransform.GetComponent<Rigidbody2D>().simulated = false;
-        isOnPlatform = false;
+            platformTransform.GetComponent<Rigidbody2D>().simulated = false;
+            isOnPlatform = false;
             platformTransform = null;
             positionOffset = Vector2.zero; // Reset offset
-        transform.parent = null;
-        Debug.Log("isOnPlatform set to FALSE - Player detached!");
+            transform.parent = null;
+            Debug.Log("isOnPlatform set to FALSE - Player detached!");
 
-        Debug.LogWarning("Detach Exit");
+            Debug.LogWarning("Detach Exit");
 
         } 
     }
@@ -159,31 +167,26 @@ public class BasePlatform : MonoBehaviour
                     if (playerRB.transform.position.x < platformTransform.transform.position.x)
                     {
                         // Snap to the left side
+                        spriteOffset = 90;
                         targetX = platformTransform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
-                        spriteOffset = 90; // Rotate for left side
                         Debug.Log("Falling SnaperLeft");
                     }
                     else
                     {
                         // Snap to the right side
                         targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                        spriteOffset = -90; // Rotate for right side
+                        spriteOffset = -90;
                         Debug.Log("Falling SnaperRight");
                     }
 
-
                     playerRB.MovePosition(new Vector2(targetX, playerRB.position.y));
-
-                    // Rotate the player to align with the side
-                    //rb.transform.rotation = Quaternion.Euler(0, 0, spriteOffset);
 
                     yield return new WaitForSeconds(0.2f); // Short cling effect before falling
 
-                    // Apply gravity + downward force to start falling
+                    // Apply downward force to start falling
                     playerRB.gravityScale = 0;
 
                     playerRB.velocity = falling;
-
 
                     SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
                     yield return new WaitForSeconds(1);
@@ -209,21 +212,19 @@ public class BasePlatform : MonoBehaviour
                     {
                         // Snap to the left side
                         targetX = platformTransform.transform.position.x - (platformWidth / 2) + (playerWidth / 2) - 0.1f;
-                        // spriteOffset = -90; // Rotate for left side
+                        spriteOffset = -90; // Rotate for left side
                         Debug.Log("Falling MovingLeft");
                     }
                     else
                     {
                         // Snap to the right side
                         targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                        // spriteOffset = 90; // Rotate for right side
+                        spriteOffset = 90; // Rotate for right side
                         Debug.Log("Falling MovingRight");
                     }
 
                     playerRB.MovePosition(new Vector2(targetX, rb.position.y));
 
-                    // Rotate the player to align with the side
-                    // rb.transform.rotation = Quaternion.Euler(0, 0, spriteOffset);
                     yield return new WaitForSeconds(0.2f); // Short cling effect before falling
                 }
                 break;
@@ -236,14 +237,14 @@ public class BasePlatform : MonoBehaviour
                     {
                         // Snap to the left side
                         targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                        //     spriteOffset = -90; // Rotate for left side
+                        spriteOffset = -90; // Rotate for left side
                         Debug.Log("Falling SpikyLeft");
                     }
                     else
                     {
                         // Snap to the right side
                         targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                        //  spriteOffset = -90; // Rotate for right side
+                        spriteOffset = -90; // Rotate for right side
                         Debug.Log("Falling SpikyRight");
                     }
 
@@ -282,14 +283,14 @@ public class BasePlatform : MonoBehaviour
                     {
                         // Snap to the left side
                         targetX = platformTransform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
-                        //   spriteOffset = 90; // Rotate for left side
+                        spriteOffset = 90; // Rotate for left side
                         Debug.Log("Falling SpikyLeft");
                     }
                     else
                     {
                         // Snap to the right side
                         targetX = platformTransform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
-                        //  spriteOffset = 90; // Rotate for right side
+                        spriteOffset = 90; // Rotate for right side
                         Debug.Log("Falling SpikyRight");
                     }
 
@@ -321,6 +322,5 @@ public class BasePlatform : MonoBehaviour
                 Debug.LogWarning("Somethings not working");
                 break;
         }
-
     }
 }

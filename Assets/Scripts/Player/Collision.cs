@@ -10,10 +10,8 @@ namespace Player
         public Vector2 falling = new Vector2(0, 0.9f);
         [SerializeField] Rigidbody2D rb;
         [SerializeField] Movement moveScript;
-        [SerializeField] private float normalGravityScale = 1.2f;
         public ScoreController scoreController;
         protected int score = 1;
-//        bool breakPlat = false;
         private Transform platform;
         public Transform platformTransform;
         public bool onNormalPlatform;
@@ -23,14 +21,12 @@ namespace Player
         public Vector3 LastPlayerPosition => lastPlayerPosition;
         public Transform PlatformTransform => platformTransform;
         private HashSet<GameObject> scoredObjects;
-       // private float spriteOffset;
 
         SpriteRenderer spriteRenderer;
         float platformWidth;
         float playerWidth;
         Vector2 collisionNormal;
 
-       // public float SpriteOffset { get { return spriteOffset; } set { spriteOffset = value; } }
         public Vector3 positionOffset;
         public bool isOnPlatform = false;
         public bool launched = false;
@@ -152,15 +148,10 @@ namespace Player
                             scoreController.AddScore(score);
                         }
                     }
-
-
-
-
                 }
 
                 if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x))
                 {
-
                     if (collisionNormal.y > 0.4f) // Top of the platform
                     {
                         playerWidth = rb.GetComponent<Collider2D>().bounds.size.x;
@@ -179,7 +170,6 @@ namespace Player
                     Debug.Log("Hit the bottom side moving platform!");
                     BounceSmall(collision.relativeVelocity.x, collision.relativeVelocity.y);
                 }
-
             }
         }
         private void OnTriggerEnter2D(Collider2D collision)
@@ -204,9 +194,7 @@ namespace Player
                     player.InstantDeath();
                 }
             }
-
         }
-
         private void AttachPlayer()
         {
 
@@ -227,7 +215,6 @@ namespace Player
                // rb.gravityScale = normalGravityScale; // Restore gravity
                 positionOffset = Vector3.zero; // Reset offset
                 Debug.LogWarning("Detach Exit");
-
             }
         }
 

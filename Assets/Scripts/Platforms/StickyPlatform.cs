@@ -21,18 +21,18 @@ public class StickyPlatform : BasePlatform
                 {
                     Debug.Log("Sticky Left");
                     onStickyPlatform = true;
-                    spriteOffset = 90;
                     SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
                     playerRB.velocity = Vector2.zero;
                     playerRB.gravityScale = 0;
+                    spriteOffset = 90;
                     StartCoroutine(FallDown());
                 }
                 else if (collisionNormal.x < -0.2f) // Right of the platform
                 {
                     onStickyPlatform = true;
+                    spriteOffset = -90;
 
                     Debug.Log("Sticky Right");
-                    spriteOffset = -90;
                     SoundFXManager.Instance.PlaySoundFX(SoundType.Splat);
                     playerRB.velocity = Vector2.zero;
                     playerRB.gravityScale = 0;
@@ -57,7 +57,6 @@ public class StickyPlatform : BasePlatform
                     platformWidth = platformTransform.GetComponent<Collider2D>().bounds.size.x;
                     playerRB.velocity = Vector2.zero;
                     StartCoroutine(SnapAndFallCoroutine(PlatformType.Sticky));
-
                 }
             }
         }    
@@ -70,7 +69,7 @@ public class StickyPlatform : BasePlatform
             Debug.Log("Sticky leave");
             onStickyPlatform = false;
             playerRB.gravityScale = 1.2f;
-            //spriteOffset = 0;
+            // spriteOffset = 0;
             onPlat = false;
         }
     }

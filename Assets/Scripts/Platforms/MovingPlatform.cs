@@ -19,7 +19,6 @@ public class MovingPlatform : MonoBehaviour
             return;
         }
 
-
         StartCoroutine(MovePlatform());
     }
 

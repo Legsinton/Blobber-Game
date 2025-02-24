@@ -18,10 +18,6 @@ namespace Player
         private GameUI gameUI;
         float angle;
         int reference;
-        [SerializeField] Transform MovementplatformTransform;
-        private float lastLoggedOffset = -9999f; // Unlikely starting value
-
-
 
         //Public Variables
         public float maxLaunchForce = 10f;
@@ -37,6 +33,7 @@ namespace Player
         public BasePlatform basePlatform;
 
         //SerializeField variables
+        [SerializeField] Transform MovementplatformTransform;
         [SerializeField] float normalGravityScale = 1f;
         [SerializeField] float addingGravityScale = 0.2f;
 
@@ -44,6 +41,7 @@ namespace Player
         [SerializeField] float horizontalJumpForce = 15;
         [SerializeField] float verticalJumpForce = -10;
         [SerializeField] Transform spriteTransform;
+        bool isGrounded = false;
         public Transform SpriteTransform { get { return spriteTransform; } set { spriteTransform = value; } }
 
         [SerializeField] Animator animator;
@@ -68,27 +66,24 @@ namespace Player
             gameUI = FindObjectOfType<GameUI>();
             gameObject.SetActive(true);
             collisionGame = FindAnyObjectByType<Collision>();
-            basePlatform = FindAnyObjectByType<BasePlatform>();
+            basePlatform = null;
         }
 
         void Update()
         {
-          
-            Debug.Log($"Reading spriteOffset: {basePlatform.SpriteOffset}");
 
-
-            if (rb.transform.rotation.z != 0)
+            // Stick the sprite to match the platform's side
+            if (basePlatform != null)
             {
-                rb.transform.rotation = Quaternion.Euler(0, 0, 0);
+                spriteTransform.rotation = Quaternion.Euler(0, 0, basePlatform.SpriteOffset);
+                Debug.Log("spriteOffset " + basePlatform.SpriteOffset);
             }
 
-            if (Mathf.Abs(basePlatform.SpriteOffset - lastLoggedOffset) > 0.1f) // Log only if changed
+            if (isLaunched)
             {
-                lastLoggedOffset = basePlatform.SpriteOffset;
-                Debug.Log($"Movement - spriteOffset Updated: {lastLoggedOffset}");
+                angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
+                spriteTransform.rotation = Quaternion.Euler(0, 0, angle + -90);
             }
-
-            spriteTransform.rotation = Quaternion.AngleAxis(basePlatform.SpriteOffset, Vector3.forward);
 
             Controls();
             Jump();
@@ -97,11 +92,7 @@ namespace Player
         void FixedUpdate()
         {
 
-            if (isLaunched)
-            {
-                angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
-                spriteTransform.rotation = Quaternion.AngleAxis(angle + -basePlatform.SpriteOffset, Vector3.forward);
-            }
+           
 
             if (MovementplatformTransform != null)
             {
@@ -171,7 +162,7 @@ namespace Player
                 rb.gravityScale = normalGravityScale;
                 onPlatform = false;
                 onNormalPlatform = false;
-
+                isGrounded = false;
                 is_Attached = false;
 
                 Invoke(nameof(StopDragging), 0.05f);
@@ -186,9 +177,9 @@ namespace Player
                 isLaunched = false;
                 jumpBool = false;
                 jump = 0;
+                isGrounded = true;
             }
         }
-
         private void Jump()
         {
             if (Input.GetMouseButtonUp(0) && isLaunched && !isDragging && jumpBool == true && jump == 1)
@@ -212,13 +203,11 @@ namespace Player
         {
             isDragging = false;
         }
-
         void OnCollisionEnter2D(Collision2D collision)
         {
             if (collision.gameObject.CompareTag("MovingPlatform"))
             {
                 onPlatform = true;
-               // collisionGame.SpriteOffset = (rb.transform.position.x < collision.transform.position.x) ? 90 : -90; // Adjust as needed (e.g., 90 or -90 degrees)
                 MovementplatformTransform = collision.transform; // Store the platform's transform
                 lastPlayerPosition = MovementplatformTransform.position; // Initialize position
                // initialMousePos = transform.position;
@@ -237,7 +226,6 @@ namespace Player
         }
         public void InstantDeath()
         {
-
             animator.SetTrigger("Death");
             if (!hasPlayed)
             {
@@ -245,7 +233,6 @@ namespace Player
                 hasPlayed = true;
             }
             Invoke(nameof(Respawn), 0.3f);
-
         }
         private void Respawn()
         {

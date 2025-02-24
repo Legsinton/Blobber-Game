@@ -123,8 +123,6 @@ public class SpikyPlatform : BasePlatform
                         top = true;
                     }
                 }
-
-
             }
         }
     }
