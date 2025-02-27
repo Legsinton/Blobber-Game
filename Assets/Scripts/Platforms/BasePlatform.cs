@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEngine.WSA;
+//using UnityEngine.WSA;
 
 public class BasePlatform : MonoBehaviour
 {
@@ -13,7 +13,7 @@ public class BasePlatform : MonoBehaviour
     protected float spriteOffset;
     protected Vector2 collisionNormal;
     protected Vector2 positionOffset;
-    protected bool isOnPlatform = false;
+    protected bool isOnPlatform;
     protected float normalGravityScale = 1.2f;
     protected bool onPlat = false;
     protected float platformWidth;
@@ -22,65 +22,78 @@ public class BasePlatform : MonoBehaviour
     protected Rigidbody2D playerRB;
     protected Vector2 falling = new Vector2(0, -0.9f);
     protected SpriteRenderer spriteRenderer;
-    protected Rigidbody2D rb;
+    float sideForce = 0;
+   // protected Rigidbody2D rb;
     protected HashSet<GameObject> scoredObjects;
     [SerializeField] protected Transform platformTransform;
+    protected int point = 0;
+    protected bool isLeft;
+    protected bool isRight;
 
-    public bool OnStickyPlatform { get { return onStickyPlatform; } set { onStickyPlatform = value; } }
     public float SpriteOffset { get { return spriteOffset; } set { spriteOffset = value; } }
     public Movement movement;
 
-    readonly int score = 1;
-    ScoreController scoreController;
+    protected int score = 1;
+    protected ScoreController scoreController;
 
     public virtual void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
+      //  rb = GetComponent<Rigidbody2D>();
         scoreController = FindAnyObjectByType<ScoreController>();
         scoredObjects = new HashSet<GameObject>();
         movement = FindAnyObjectByType<Movement>();
-
     }
 
     protected void FixedUpdate()
     {
-        /*if (isOnPlatform && platformTransform != null)
+        if (isOnPlatform)
         {
             playerRB.transform.position = (Vector3)platformTransform.position + (Vector3)positionOffset;
-        }*/
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.transform.CompareTag("Player"))
+        {
+            playerRB = collision.gameObject.GetComponent<Rigidbody2D>();
+            HandleTrigger(collision);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         collisionNormal = collision.contacts[0].normal;
-        playerRB = collision.gameObject.GetComponent<Rigidbody2D>();
         if (collision.transform.CompareTag("Player"))
         {
+            playerRB = collision.gameObject.GetComponent<Rigidbody2D>();
             if (collision.gameObject.TryGetComponent(out Movement comp))
             {
                 comp.basePlatform = this;
             }
             HandleCollision(collision);
-
-            if (!scoredObjects.Contains(collision.gameObject) && !gameObject.CompareTag("Start"))
+            if (playerRB == null)
+            {
+                Debug.LogWarning("Player Rigidbody2D is null!");
+            }
+            if (!scoredObjects.Contains(collision.gameObject) && gameObject.CompareTag("MovingPlatform") || gameObject.CompareTag("MovingPlatformVertical") && !scoredObjects.Contains(collision.gameObject))
             {
                 scoreController.AddScore(score);
                 scoredObjects.Add(collision.gameObject);
-
             }
         }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
-        playerRB = collision.gameObject.GetComponent<Rigidbody2D>();
+        //playerRB = collision.gameObject.GetComponent<Rigidbody2D>();
+        HandleCollisionExit(collision);
 
         if (collision.gameObject.TryGetComponent(out Movement comp))
         {
             comp.basePlatform = null;
         }
 
-        HandleCollisionExit(collision);
 
     }
 
@@ -93,15 +106,40 @@ public class BasePlatform : MonoBehaviour
 
     }
 
-    protected void Bounce(float collisionVelocityX, float CollisionVelocityY)
+    protected virtual void HandleTrigger(Collider2D collider)
+    {
+
+    }
+
+    protected void Bounce(float collisionVelocityX, float collisionVelocityY)
     {
         SoundFXManager.Instance.PlaySoundFX(SoundType.Boing);
         float bounceScale = 2f;
         float maxBounceforce = 8;
-        float upBounceforce = Mathf.Abs(CollisionVelocityY) * bounceScale;
+        float upBounceforce = Mathf.Abs(collisionVelocityY) * bounceScale;
         upBounceforce = Mathf.Clamp(upBounceforce, 0f, maxBounceforce);
-        playerRB.AddForce(new Vector2(collisionVelocityX * 1.1f, upBounceforce), ForceMode2D.Impulse);
-        Debug.Log(collisionVelocityX);
+        if(collisionVelocityX < 0)
+        {
+            Debug.Log("Hälldowgsrb");
+            sideForce = Mathf.Abs(collisionVelocityX) * bounceScale;
+            sideForce = Mathf.Clamp(sideForce, 1f, maxBounceforce);
+
+        }
+        else
+        {
+            Debug.Log("else");
+            sideForce = Mathf.Abs(-collisionVelocityX) * bounceScale;
+            sideForce = Mathf.Clamp(sideForce, 1f, -maxBounceforce);
+        }
+        playerRB.AddForce(new Vector2(sideForce, upBounceforce), ForceMode2D.Impulse);
+        if (isRight && sideForce == 0)
+        {
+            playerRB.AddForce(new Vector2(-8, upBounceforce), ForceMode2D.Impulse);
+        }
+        if (isLeft && sideForce == 0)
+        {
+            playerRB.AddForce(new Vector2(8, upBounceforce), ForceMode2D.Impulse);
+        }
     }
     protected void BounceSmall(float collisionVelocityX, float collisionVelocityY)
     {
@@ -110,10 +148,7 @@ public class BasePlatform : MonoBehaviour
         float maxBounceforce = 5;
         float upBounceforce = Mathf.Abs(collisionVelocityY) * bounceScale;
         upBounceforce = Mathf.Clamp(upBounceforce, 0f, maxBounceforce);
-
         playerRB.AddForce(new Vector2(collisionVelocityX + 2f, upBounceforce), ForceMode2D.Impulse);
-        Debug.Log(collisionVelocityX);
-
     }
 
     protected IEnumerator FallDown()
@@ -129,8 +164,7 @@ public class BasePlatform : MonoBehaviour
 
     protected void AttachPlayer()
     {
-        Debug.Log("Attached");
-        Debug.Log("Attached to: " + (platformTransform != null ? platformTransform.name : "NULL"));
+     
         SoundFXManager.Instance.PlaySoundFX(SoundType.Smack);
         isOnPlatform = true;
         Debug.Log("isOnPlatform set to TRUE - Player attached to platform!");
@@ -140,19 +174,13 @@ public class BasePlatform : MonoBehaviour
     }
     public void DetachPlayer()
     {
-        if (!isOnPlatform)
-        {
-            platformTransform.GetComponent<Rigidbody2D>().simulated = false;
-            isOnPlatform = false;
-            platformTransform = null;
-            positionOffset = Vector2.zero; // Reset offset
-            transform.parent = null;
-            Debug.Log("isOnPlatform set to FALSE - Player detached!");
-
-            Debug.LogWarning("Detach Exit");
-
-        } 
+        Debug.LogWarning("Detach Exit");
+        isOnPlatform = false;
+        platformTransform = null;
+        positionOffset = Vector2.zero; // Reset offset
     }
+
+   
 
     protected IEnumerator SnapAndFallCoroutine(PlatformType platformType)
     {
@@ -168,18 +196,20 @@ public class BasePlatform : MonoBehaviour
                     {
                         // Snap to the left side
                         spriteOffset = 90;
-                        targetX = platformTransform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
+                        targetX = platformTransform.transform.position.x + (platformWidth / 2) - (playerWidth / 2) - 1f;
+                        
                         Debug.Log("Falling SnaperLeft");
                     }
                     else
                     {
                         // Snap to the right side
-                        targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
+                        targetX = platformTransform.transform.position.x - (platformWidth / 2) + (playerWidth / 2) + 1f;
                         spriteOffset = -90;
                         Debug.Log("Falling SnaperRight");
                     }
 
-                    playerRB.MovePosition(new Vector2(targetX, playerRB.position.y));
+                    Debug.Log(targetX);
+                    playerRB.position = new Vector2(targetX, playerRB.position.y);
 
                     yield return new WaitForSeconds(0.2f); // Short cling effect before falling
 
@@ -211,19 +241,20 @@ public class BasePlatform : MonoBehaviour
                     if (playerRB.transform.position.x < platformTransform.transform.position.x)
                     {
                         // Snap to the left side
-                        targetX = platformTransform.transform.position.x - (platformWidth / 2) + (playerWidth / 2) - 0.1f;
-                        spriteOffset = -90; // Rotate for left side
+                        targetX = platformTransform.transform.position.x + (platformWidth / 2) - (playerWidth / 2) - 1f;
+                        spriteOffset = 90; // Rotate for left side
                         Debug.Log("Falling MovingLeft");
                     }
                     else
                     {
                         // Snap to the right side
-                        targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                        spriteOffset = 90; // Rotate for right side
+                        targetX = platformTransform.transform.position.x - (platformWidth / 2) + (playerWidth / 2) + 1f;
+                        spriteOffset = -90; // Rotate for right side
                         Debug.Log("Falling MovingRight");
                     }
 
-                    playerRB.MovePosition(new Vector2(targetX, rb.position.y));
+                    playerRB.position = new Vector2(targetX, playerRB.position.y);
+                    AttachPlayer();
 
                     yield return new WaitForSeconds(0.2f); // Short cling effect before falling
                 }
@@ -235,19 +266,24 @@ public class BasePlatform : MonoBehaviour
                     float targetX;
                     if (playerRB.transform.position.x < platformTransform.transform.position.x)
                     {
+                        Debug.Log("Hellose");
                         // Snap to the left side
-                        targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                        spriteOffset = -90; // Rotate for left side
-                        Debug.Log("Falling SpikyLeft");
+                        spriteOffset = -90;
+                        targetX = platformTransform.transform.position.x - (platformWidth / 2) + (playerWidth / 2) + 1f;
+
+                        Debug.Log("Falling SnaperLeft");
                     }
                     else
                     {
-                        // Snap to the right side
-                        targetX = platformTransform.transform.position.x + (platformWidth / 2) + (playerWidth / 2) + 0.1f;
-                        spriteOffset = -90; // Rotate for right side
-                        Debug.Log("Falling SpikyRight");
+                        Debug.Log("Hellose");
+                        // Snap to the left side
+                        spriteOffset = -90;
+                        targetX = platformTransform.transform.position.x - (platformWidth / 2) + (playerWidth / 2) + 1f;
+
+                        Debug.Log("Falling SnaperLeft");
                     }
 
+                    Debug.Log(targetX);
 
                     playerRB.MovePosition(new Vector2(targetX, playerRB.position.y));
 
@@ -255,6 +291,7 @@ public class BasePlatform : MonoBehaviour
 
                     // Apply gravity + downward force to start falling
                     playerRB.gravityScale = 0;
+                    spriteOffset = -90;
 
                     playerRB.velocity = falling;
 
@@ -269,7 +306,7 @@ public class BasePlatform : MonoBehaviour
                     Debug.Log("normal gravity");
                     if (onPlat != false)
                     {
-                        rb.gravityScale = normalGravityScale;
+                        playerRB.gravityScale = normalGravityScale;
 
                     }
                 }
@@ -281,21 +318,23 @@ public class BasePlatform : MonoBehaviour
                     float targetX;
                     if (playerRB.transform.position.x < platformTransform.transform.position.x)
                     {
+                        Debug.Log("Hellose");
                         // Snap to the left side
-                        targetX = platformTransform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
-                        spriteOffset = 90; // Rotate for left side
-                        Debug.Log("Falling SpikyLeft");
+                        spriteOffset = 90;
+                        targetX = platformTransform.transform.position.x + (platformWidth / 2) - (playerWidth / 2) - 1f;
+                        Debug.Log("Falling SnaperLeft");
                     }
                     else
                     {
-                        // Snap to the right side
-                        targetX = platformTransform.transform.position.x - (platformWidth / 2) - (playerWidth / 2) - 0.1f;
-                        spriteOffset = 90; // Rotate for right side
-                        Debug.Log("Falling SpikyRight");
+                        Debug.Log("Hellose");
+                        // Snap to the left side
+                        spriteOffset = 90;
+                        targetX = platformTransform.transform.position.x + (platformWidth / 2) - (playerWidth / 2) - 1f;
+                        Debug.Log("Falling SnaperLeft");
                     }
 
-
-                    playerRB.MovePosition(new Vector2(targetX, rb.position.y));
+                    Debug.Log(targetX);
+                    playerRB.position = new Vector2(targetX, playerRB.position.y);
 
                     yield return new WaitForSeconds(0.2f); // Short cling effect before falling
 
@@ -322,5 +361,12 @@ public class BasePlatform : MonoBehaviour
                 Debug.LogWarning("Somethings not working");
                 break;
         }
+    }
+    public enum PlatformType
+    {
+        Sticky,
+        Spiky,
+        SpikyFlip,
+        Moving
     }
 }

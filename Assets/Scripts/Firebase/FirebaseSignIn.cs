@@ -1,5 +1,5 @@
 using Firebase.Extensions;
-using UnityEditor.PackageManager;
+//using UnityEditor.PackageManager;
 using UnityEngine.Networking.PlayerConnection;
 using System.Collections;
 using UnityEngine;
@@ -8,6 +8,7 @@ using Firebase.Auth;
 using TMPro;
 using System.Threading.Tasks;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal.Internal;
 
 public class AuthManager : MonoBehaviour
 {
@@ -33,44 +34,29 @@ public class AuthManager : MonoBehaviour
     public TMP_InputField passwordRegisterField;
     public TMP_InputField passwordRegisterVerifyField;
     public TMP_Text warningRegisterText;
+    public UIManager uiManager;
 
     void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // Keep AuthManager alive across scenes
-        }
-        else
-        {
-            Destroy(gameObject); // Destroy any extra instances of AuthManager
-        }
         if(highScore != null)
         {
 
           highScore.text = $"HighScore:{PlayerPrefs.GetInt("HighScore", 0)}";
         }
-        //Check that all of the necessary dependencies for Firebase are present on the system
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
+        uiManager = UIManager.instance;
+        // Initialize Firebase
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             dependencyStatus = task.Result;
             if (dependencyStatus == DependencyStatus.Available)
             {
-                //If they are avalible Initialize Firebase
-                InitializeFirebase();
+                auth = FirebaseAuth.DefaultInstance;
             }
             else
             {
-                Debug.LogError("Could not resolve all Firebase dependencies: " + dependencyStatus);
+                Debug.LogError("Could not resolve Firebase dependencies: " + dependencyStatus);
             }
         });
-    }
-
-    private void InitializeFirebase()
-    {
-        Debug.Log("Setting up Firebase Auth");
-        //Set the authentication instance object
-        auth = FirebaseAuth.DefaultInstance;
     }
 
     //Function for the login button
@@ -92,6 +78,8 @@ public class AuthManager : MonoBehaviour
         Task<AuthResult> LoginTask = auth.SignInWithEmailAndPasswordAsync(_email, _password);
         //Wait until the task completes
         yield return new WaitUntil(predicate: () => LoginTask.IsCompleted);
+        
+
 
         if (LoginTask.Exception != null)
         {
@@ -129,6 +117,20 @@ public class AuthManager : MonoBehaviour
             Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.Email);
             warningLoginText.text = "";
             confirmLoginText.text = "Logged In";
+            StartCoroutine(uiManager.StartHighScore());
+        }
+    }
+
+    public void LogOut()
+    {
+        if (auth.CurrentUser != null)
+        {
+            Debug.Log("Logging out user: " + auth.CurrentUser.UserId);
+            auth.SignOut();
+        }
+        else
+        {
+            Debug.Log("No user is currently signed in.");
         }
     }
 

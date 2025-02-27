@@ -9,10 +9,11 @@ using UnityEngine;
 public class FirebaseScript : MonoBehaviour
 {
     public static FirebaseScript Instance;
-    FirebaseDatabase db;
-    FirebaseAuth auth;
+    [SerializeField] FirebaseDatabase db;
+    [SerializeField] FirebaseAuth auth;
 
-    public int playerHighscore;
+    private int _playerHighScore = -1;
+    public int PlayerHighScore => _playerHighScore;
 
     private void Awake()
     {
@@ -26,10 +27,15 @@ public class FirebaseScript : MonoBehaviour
             Destroy(gameObject);  // Destroy any duplicate instances
         }
     }
+    private void Update()
+    {
+        Debug.LogWarning(auth);
+    }
     void Start()
     {
 
         // Setup for talking to Firebase
+        auth = FirebaseAuth.DefaultInstance;  // Ensure auth is initialized
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             if (task.Result == DependencyStatus.Available)
@@ -94,26 +100,14 @@ public class FirebaseScript : MonoBehaviour
 
         userHighscoreRef.SetValueAsync(score).ContinueWithOnMainThread(dbTask =>
         {
-
             if (dbTask.IsCompleted && !dbTask.IsFaulted)
             {
-                Debug.Log("saved to firebase");
-                userHighscoreRef.GetValueAsync().ContinueWithOnMainThread(getTask =>
-                {
-                    if (getTask.IsCompleted && getTask.Result.Exists)
-                    {
-                        playerHighscore = int.Parse(getTask.Result.Value.ToString());
-                        Debug.Log("Player high score updated: " + playerHighscore);
-                    }
-                    else
-                    {
-                        Debug.LogError("Failed to retrieve updated high score: " + getTask.Exception);
-                    }
-                });
+                // value saved properly, Invoke.ScoreUpdated(score)
+                _playerHighScore = score;
             }
             else
             {
-                Debug.LogError("Error retrieving player high score: " + dbTask.Exception);
+                Debug.LogError("could not set value");
             }
         });
         }
@@ -124,10 +118,40 @@ public class FirebaseScript : MonoBehaviour
     }
     public void GetPlayerHighscoreFromFirebase(Action<int> onHighscoreRetrieved)
     {
+        Debug.LogWarning(auth);
         if (auth.CurrentUser != null)
         {
             string userId = auth.CurrentUser.UserId;
-            DatabaseReference userHighscoreRef = db.RootReference.Child("HighScores").Child(userId).Child("Score");
+            DatabaseReference userHighscoreRef = db.RootReference.Child("HighScores").Child(userId).Child("score");
+
+            userHighscoreRef.GetValueAsync().ContinueWithOnMainThread(dbTask =>
+            {
+                if (dbTask.IsCompleted && dbTask.Result.Exists)
+                {
+                    int firebaseHighScore = int.Parse(dbTask.Result.Value.ToString());
+                    onHighscoreRetrieved(firebaseHighScore);
+                }
+                else
+                {
+                    Debug.LogError("Failed to retrieve high score from Firebase: " + dbTask.Exception);
+                    onHighscoreRetrieved(0); // Default to 0 if no score exists
+                }
+            });
+        }
+        else
+        {
+            Debug.LogError("User is not authenticated.");
+            onHighscoreRetrieved(0);
+        }
+    }
+
+    public void GetOverallHighscoreFromFirebase(Action<int> onHighscoreRetrieved)
+    {
+        Debug.LogWarning(auth);
+        if (auth.CurrentUser != null)
+        {
+            string userId = auth.CurrentUser.UserId;
+            DatabaseReference userHighscoreRef = db.RootReference.Child("HighScore").Child(userId).Child("Score");
 
             userHighscoreRef.GetValueAsync().ContinueWithOnMainThread(dbTask =>
             {
@@ -158,7 +182,7 @@ public class FirebaseScript : MonoBehaviour
             string userID = auth.CurrentUser.UserId;
 
             DatabaseReference reference = FirebaseDatabase.DefaultInstance.RootReference;
-            reference.Child("HighScores").Child(userID).Child("Score").SetValueAsync(score).ContinueWithOnMainThread(task =>
+            reference.Child("HighScore").Child("Score").SetValueAsync(score).ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted)
                 {

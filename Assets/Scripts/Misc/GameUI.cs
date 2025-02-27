@@ -61,6 +61,7 @@ public class GameUI : MonoBehaviour
         scoreController.newhighScore.enabled = false;
         scoreController.deathscoreText.enabled = true;
         scoreController.DeathScore();
+        scoreController.PlayerHighscore();
 
     }
 

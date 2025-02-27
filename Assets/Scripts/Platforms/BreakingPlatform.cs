@@ -2,7 +2,7 @@ using Player;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.WSA;
+//using UnityEngine.WSA;
 
 public class BreakingPlatform : BasePlatform
 {
@@ -78,10 +78,7 @@ public class BreakingPlatform : BasePlatform
                     {
                         Debug.Log("BrekingExitRight");
                         //  rb.gravityScale = normalGravityScale;
-                        top = false;
-                        playerRB.gravityScale = 1.2f;
-                        //spriteOffset = 0;
-                        onPlat = false;
+                       
                         if (breaking)
                         {
                             StartCoroutine(FadeOut(0.7f));
@@ -94,8 +91,7 @@ public class BreakingPlatform : BasePlatform
                         // rb.gravityScale = normalGravityScale;
                         onPlat = false;
                         top = false;
-                        playerRB.gravityScale = 1.2f;
-                        //spriteOffset = 0;
+                        
                         if (breaking)
                         {
                             StartCoroutine(FadeOut(0.7f));

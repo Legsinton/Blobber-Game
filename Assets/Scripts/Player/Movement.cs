@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Runtime.CompilerServices;
-using UnityEditor.iOS;
+//using UnityEditor.iOS;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 
@@ -9,13 +9,11 @@ namespace Player
     public class Movement : MonoBehaviour
     {
         //Private Variables
-       // private Vector3 initialMousePos;
         private Vector3 dragVector;
         private Vector3 initialTouchPos;
         private Vector3 lastPlayerPosition;
         private Vector2 launchDirection;
         private Vector2 endPosition;
-        private GameUI gameUI;
         float angle;
         int reference;
 
@@ -24,16 +22,14 @@ namespace Player
         public float speed = 2f;
         public float lineLengthMultiplier = 0.5f;
         private int jump = 0;
-        bool jumpBool = false;
         //Public Objects
         public Rigidbody2D rb;
         public LineRenderer lineRenderer;
         public GameObject player;
-        public Collision collisionGame;
         public BasePlatform basePlatform;
 
         //SerializeField variables
-        [SerializeField] Transform MovementplatformTransform;
+        [SerializeField] Transform movementPlatformTransform;
         [SerializeField] float normalGravityScale = 1f;
         [SerializeField] float addingGravityScale = 0.2f;
 
@@ -41,19 +37,13 @@ namespace Player
         [SerializeField] float horizontalJumpForce = 15;
         [SerializeField] float verticalJumpForce = -10;
         [SerializeField] Transform spriteTransform;
-        bool isGrounded = false;
-        public Transform SpriteTransform { get { return spriteTransform; } set { spriteTransform = value; } }
-
         [SerializeField] Animator animator;
-        private bool is_Attached;
-        public bool IsAttached { get { return is_Attached; } set { is_Attached = value; } }
 
         //Private Bools
-        bool onNormalPlatform = false;
-        bool hasPlayed = false;
         bool isDragging = false;
-        bool onPlatform = false;
-        [SerializeField] bool isLaunched = false;
+
+        bool jumpBool = false;
+        bool isLaunched = false;
 
         void Start()
         {
@@ -63,9 +53,7 @@ namespace Player
             lineRenderer.enabled = false;
             lineRenderer.positionCount = 2;
 
-            gameUI = FindObjectOfType<GameUI>();
             gameObject.SetActive(true);
-            collisionGame = FindAnyObjectByType<Collision>();
             basePlatform = null;
         }
 
@@ -76,7 +64,6 @@ namespace Player
             if (basePlatform != null)
             {
                 spriteTransform.rotation = Quaternion.Euler(0, 0, basePlatform.SpriteOffset);
-                Debug.Log("spriteOffset " + basePlatform.SpriteOffset);
             }
 
             if (isLaunched)
@@ -91,22 +78,17 @@ namespace Player
 
         void FixedUpdate()
         {
-
-           
-
-            if (MovementplatformTransform != null)
-            {
-                lastPlayerPosition = MovementplatformTransform.position; // Update position every frame
-            }
-            if ((onPlatform || onNormalPlatform) && MovementplatformTransform != null && isDragging) // Only update if standing on a platform
-            {
-                //Vector3 platformMovement = platformTransform.position - lastPlayerPosition;
-
-                lastPlayerPosition = MovementplatformTransform.position; // Update last position
-            }
-            if (rb.velocity.y < 0 && rb.velocity.y != -0.9f)
+            if (rb.velocity.y < 0 && isLaunched && rb.velocity.y != -0.9f)
             {
                 rb.gravityScale += addingGravityScale * Time.deltaTime;
+            }
+            if (isLaunched)
+            {
+                rb.mass += 0.2f * Time.deltaTime;
+            }
+            else
+            {
+                rb.mass = 1;
             }
         }
         private void Controls()
@@ -146,11 +128,17 @@ namespace Player
             // Launch on release
             if (Input.GetMouseButtonUp(0) && !isLaunched && !jumpBool && isDragging)
             {
-               // basePlatform.DetachPlayer();
                 // Use the same drag vector calculated during dragging
                 float dragDistance = Mathf.Clamp(dragVector.magnitude, 0, maxLaunchForce);
 
-                collisionGame.DetachPlayer();
+                if(basePlatform != null)
+                {
+                    basePlatform.DetachPlayer();
+
+                }
+           
+                
+           
                 // Apply the force for the launch
                 rb.AddForce(launchDirection * (dragDistance * speed), ForceMode2D.Impulse);
                 isLaunched = true;
@@ -160,10 +148,6 @@ namespace Player
                 jump++; // Reset jump count for single jump
                 jumpBool = true;
                 rb.gravityScale = normalGravityScale;
-                onPlatform = false;
-                onNormalPlatform = false;
-                isGrounded = false;
-                is_Attached = false;
 
                 Invoke(nameof(StopDragging), 0.05f);
                 animator.SetTrigger("JumpUp");
@@ -177,7 +161,6 @@ namespace Player
                 isLaunched = false;
                 jumpBool = false;
                 jump = 0;
-                isGrounded = true;
             }
         }
         private void Jump()
@@ -202,42 +185,6 @@ namespace Player
         private void StopDragging()
         {
             isDragging = false;
-        }
-        void OnCollisionEnter2D(Collision2D collision)
-        {
-            if (collision.gameObject.CompareTag("MovingPlatform"))
-            {
-                onPlatform = true;
-                MovementplatformTransform = collision.transform; // Store the platform's transform
-                lastPlayerPosition = MovementplatformTransform.position; // Initialize position
-               // initialMousePos = transform.position;
-            }
-            if (collision.gameObject.CompareTag("MovingPlatformVertical"))
-            {
-                onPlatform = true;
-                MovementplatformTransform = collision.transform; // Store the platform's transform
-                lastPlayerPosition = MovementplatformTransform.position; // Initialize position
-            }
-        }
-
-        public void Die()
-        {
-            Invoke(nameof(Respawn), 1f);
-        }
-        public void InstantDeath()
-        {
-            animator.SetTrigger("Death");
-            if (!hasPlayed)
-            {
-                SoundFXManager.Instance.PlaySoundFX(SoundType.Death);
-                hasPlayed = true;
-            }
-            Invoke(nameof(Respawn), 0.3f);
-        }
-        private void Respawn()
-        {
-            gameObject.SetActive(false);
-            gameUI.GameOver();
         }
     }
 }

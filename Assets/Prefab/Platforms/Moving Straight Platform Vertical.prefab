@@ -1256,6 +1256,7 @@ GameObject:
   - component: {fileID: 5883688851150595369}
   - component: {fileID: 5726202801744626550}
   - component: {fileID: 8633591713925983379}
+  - component: {fileID: 8173994427910938532}
   m_Layer: 6
   m_Name: StraightMovePlatform
   m_TagString: MovingPlatformVertical
@@ -1392,6 +1393,20 @@ CapsuleCollider2D:
   m_Offset: {x: -0.0000038146966, y: -0.00352624}
   m_Size: {x: 0.98437464, y: 0.9773226}
   m_Direction: 0
+--- !u!114 &8173994427910938532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8665334667406236249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fa8951de0f0d924799e012cc70fa651, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  platformTransform: {fileID: 0}
+  movement: {fileID: 0}
 --- !u!1 &9027649137847604896
 GameObject:
   m_ObjectHideFlags: 0

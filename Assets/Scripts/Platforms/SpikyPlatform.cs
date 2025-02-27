@@ -1,10 +1,10 @@
 using Player;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.iOS;
+//using UnityEditor.iOS;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
-using UnityEngine.WSA;
+//using UnityEngine.WSA;
 
 public class SpikyPlatform : BasePlatform
 {
@@ -92,24 +92,19 @@ public class SpikyPlatform : BasePlatform
                     {
                         Debug.Log("SpickyLeavingRight");
                         //isStuckToStickyPlatform = false;
-                        if (top != true)
-                        {
+                       
                             // rb.gravityScale = normalGravityScale;
                             top = false;
                             onPlat = false;
 
-                        }
+                        
 
                     }
                     if (collisionNormal.x < -0.4f)
                     {
                         onPlat = false;
 
-                        if (top != true)
-                        {
-                            //rb.gravityScale = normalGravityScale;
-                            top = false;
-                        }
+                       
                     }
                 }
                 if (Mathf.Abs(collisionNormal.y) > Mathf.Abs(collisionNormal.x))

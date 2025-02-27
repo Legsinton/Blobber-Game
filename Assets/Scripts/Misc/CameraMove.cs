@@ -49,7 +49,6 @@ public class CameraMove : MonoBehaviour
             if (highestPointReached > minY)
             {
                 minY = highestPointReached;
-
             }
 
             // Target position including offset
@@ -65,14 +64,10 @@ public class CameraMove : MonoBehaviour
 
             if (target.position.y > treashold && !disablleScreenMove)
             {
-                PerformInvisibleReset(70f); // Shift everything down by 70 units
-
+                PerformInvisibleReset(100f); // Shift everything down by 70 units
             }
         }
     }
-
-
-
     private void PerformInvisibleReset(float shiftOffset)
     {
         // Shift the player down

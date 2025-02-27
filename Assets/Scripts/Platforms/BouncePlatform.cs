@@ -18,16 +18,20 @@ public class BouncePlatform : BasePlatform
                 if (!hasBounced)
                 {
                     if (collisionNormal.x > 0.1f) // RightSide of the platform
-                    {    
+                    {
+                        isRight = true;
                         hasBounced = true;
-                        Bounce(-collision.relativeVelocity.x, -collision.relativeVelocity.y);
+                        playerRB.gravityScale = normalGravityScale;
+                        Bounce(collision.relativeVelocity.x, -collision.relativeVelocity.y);
                         Invoke(nameof(ResetBounce), 0.5f);
                         Debug.Log("RightBounce");
                     }
                     else if (collisionNormal.x < -0.1f) // Leftside of the platform
                     {
                         hasBounced = true;
-                        Bounce(-collision.relativeVelocity.x, -collision.relativeVelocity.y);
+                        playerRB.gravityScale = normalGravityScale;
+                        isLeft = true;
+                        Bounce(collision.relativeVelocity.x, -collision.relativeVelocity.y);
                         Invoke(nameof(ResetBounce), 0.1f);
                         Debug.Log("LeftBounce");
                     }
